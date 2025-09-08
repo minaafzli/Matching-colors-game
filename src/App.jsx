@@ -103,17 +103,17 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start p-6">
-      <h1 className="text-2xl font-semibold mb-4">Memory Game</h1>
-      <div className="mb-4">
+    <div className="min-h-screen flex flex-col items-center justify-start md:justify-center p-6 bg-pink-100">
+      <h1 className="text-2xl font-semibold mb-4">Matching Game!</h1>
+      <Board cards={cards} handleChoice={handleChoice} />
+      <div className="mt-4">
         <button
-          className="px-4 py-2 bg-blue-600 text-white rounded"
+          className="px-4 py-2 md:py-3 md:px-6 bg-pink-600 text-white rounded"
           onClick={startNewGame}
         >
           Restart
         </button>
       </div>
-      <Board cards={cards} handleChoice={handleChoice} />
     </div>
   );
 }
