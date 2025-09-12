@@ -1,5 +1,5 @@
 // App.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef} from "react";
 import Board from '/components/Board'
 
 const COLORS = [
@@ -16,8 +16,11 @@ const COLORS = [
 export default function App() {
   const [cards, setCards] = useState([]);       
   const [choiceOne, setChoiceOne] = useState(null); 
-  const [choiceTwo, setChoiceTwo] = useState(null); 
+  const [tries , setTries] = useState(0)
+  const [matchedCard , setMatchedCard] = useState(0)
+  const [showModal , setShowModal] = useState(false)
   const [disabled, setDisabled] = useState(false); //disable clicking while compairing
+  const [choiceTwo, setChoiceTwo] = useState(null); 
   const timeoutRef = useRef(null); //timeout for cleaning
 
   
@@ -36,13 +39,15 @@ export default function App() {
     setChoiceOne(null);
     setChoiceTwo(null);
     setDisabled(false);
-  }
+  
+}
 
-  // start game
-  useEffect(() => {
-    startNewGame();
-    
-  }, []);
+
+// start game
+useEffect(() => {
+  startNewGame();
+  
+}, []);
 
 
   useEffect(() => {
@@ -56,12 +61,14 @@ export default function App() {
 
     if (choiceOne.color === choiceTwo.color) {
   // matched(true)
-      setCards((prev) =>
-        prev.map((card) =>
-          card.color === choiceOne.color ? { ...card, matched: true } : card
-        )
-      );
+  setCards((prev) =>
+    prev.map((card) =>
+      card.color === choiceOne.color ? { ...card, matched: true } : card
+)
+);
       resetTurn();
+  setMatchedCard(matchedCard+1)
+    
     } else {
 //delay to see card's color befor flipped(false)
       timeoutRef.current = setTimeout(() => {
@@ -76,6 +83,10 @@ export default function App() {
       }, 900);
     }
   }, [choiceTwo]);
+
+useEffect(()=>{
+if(matchedCard===COLORS.length) setShowModal(true)
+},[matchedCard])
 
   function handleChoice(card) {
     // disable click while compairing
@@ -100,20 +111,52 @@ export default function App() {
     setChoiceOne(null);
     setChoiceTwo(null);
     setDisabled(false);
+    setTries(tries+1)
+   
   }
 
-  return (
-    <div className="min-h-screen flex flex-col items-center justify-start md:justify-center p-6 bg-pink-100">
-      <h1 className="text-2xl font-semibold mb-4">Matching Game!</h1>
-      <Board cards={cards} handleChoice={handleChoice} />
-      <div className="mt-4">
-        <button
-          className="px-4 py-2 md:py-3 md:px-6 bg-pink-600 text-white rounded"
-          onClick={startNewGame}
-        >
-          Restart
-        </button>
-      </div>
+return (   
+  <div
+    className={"min-h-screen flex flex-col items-center justify-start md:justify-center p-6 bg-pink-100 relative "}
+  >
+    <div className={`${
+      showModal ? "blur-xs " : "blur-none"
+    }`}>
+
+    <h1 className="text-2xl font-semibold mb-4 text-center">Matching Game!</h1>
+    <div className="flex justify-between gap-10">
+      <p>tries: {tries}</p>
+      <p>matched: {matchedCard}</p>
+      <p>timer: 0:23</p>
     </div>
-  );
+    <Board cards={cards} handleChoice={handleChoice} />
+    <div className=" flex mt-4 justify-center">
+      <button
+        className="px-4 py-2 md:py-3 md:px-6 bg-pink-600 text-white rounded cursor-pointer hover:bg-pink-700 "
+        onClick={startNewGame}
+        >
+        Restart
+      </button>
+    </div>
+        </div>
+
+    {/* Modal */}
+    {showModal && (
+      <div className="fixed inset-0 flex items-center justify-center">
+        <div className="bg-black text-gray-200 rounded-lg p-6 w-72 md:w-96 text-center shadow-2xl">
+          <p className="font-bold text-lg pb-5">Game over!</p>
+          <p>tries: {tries}</p>
+          <p>time: 0:23</p>
+          <button
+            onClick={() => setShowModal(false)}
+            className="mt-4 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
 }
