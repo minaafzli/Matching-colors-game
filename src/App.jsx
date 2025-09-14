@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef} from "react";
 import Board from '/components/Board'
 import Timer from '/components/Timer'
+import FormatTime from "../components/FormatTime";
 
 const COLORS = [
   "bg-pink-300",
@@ -24,6 +25,8 @@ export default function App() {
   const [choiceTwo, setChoiceTwo] = useState(null); 
   const [isGameOver , setIsGameOver] =useState(false)
     const [seconds, setSeconds] = useState(0);
+    const [bestTime , setBestTime] =useState(null)
+    const [bestTry , setBestTry] =useState(null)
 
   const timeoutRef = useRef(null); //timeout for cleaning
 
@@ -49,7 +52,6 @@ export default function App() {
     setSeconds(0)
     
   }
-  
   
   // start game
   useEffect(() => {
@@ -93,13 +95,62 @@ export default function App() {
     }
   }, [choiceTwo]);
 
+
  useEffect(()=>{
    if(matchedCard===COLORS.length) {
     setIsGameOver(true)
     setShowModal(true)
+
+
+     setBestTime((prev) => {
+      if (prev === null || seconds < prev) {
+        return   seconds
+
+      }
+ return prev
+    })
+
+     setBestTry((prev) => {
+      if (prev === null || tries < prev) {
+        return tries
+      }
+      return prev
+    })
+  
     }
  },[matchedCard])
+
+  // وقتی مقدار BestTry یا BestTime تغییر کرد ذخیره بشه
+useEffect(() => {
+ 
+
+  if (bestTry !== null) {
+    localStorage.setItem("bestTry", bestTry);
+  }
+}, [bestTry]);
+
+useEffect(() => {
+  if (bestTime !== null) {
+    localStorage.setItem("bestTime", bestTime);
+  }
+}, [bestTime]);
+
+// وقتی برنامه اجرا میشه، از localStorage مقدار قبلی رو بخونه
+useEffect(() => {
+ 
+    const savedBestTry = localStorage.getItem("bestTry");
+    const savedBestTime = localStorage.getItem("bestTime");
+    
+    if (savedBestTry !== null) {
+      setBestTry(Number(savedBestTry));
+    }
+    if (savedBestTime !== null) {
+      setBestTime(Number(savedBestTime));
+    }
+    
   
+}, []);
+
 
   function handleChoice(card) {
     // disable click while compairing
@@ -139,9 +190,9 @@ return (
 
     <h1 className="text-2xl font-semibold mb-4 text-center">Matching Game!</h1>
     <div className="flex justify-between gap-10">
-      <p>tries: {tries}</p>
-      <p>matched: {matchedCard}</p>
-      <p className="flex gap-1">timer:  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds}  />}</p>
+      <p>Tries: {tries}</p>
+      <p>Matched: {matchedCard}</p>
+      <p className="flex gap-1">Timer:  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds}  />}</p>
     </div>
     <Board cards={cards} handleChoice={handleChoice} />
     <div className=" flex mt-4 justify-center">
@@ -156,20 +207,31 @@ return (
 
     {/* Modal */}
     {showModal && (
-      <div className="fixed inset-0 flex items-center justify-center">
-        <div className="bg-black text-gray-200 rounded-lg p-6 w-72 md:w-96 text-center shadow-2xl">
+      <div className="fixed inset-0 flex flex-col items-center justify-center">
+        <div className="bg-pink-100 text-gray-800 rounded-lg p-6 w-auto  text-center shadow-2xl">
           <p className="font-bold text-lg pb-5">Game Compeleted!</p>
-          <p>tries: {tries}</p>
-      <p className="flex gap-1 justify-center">timer:  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds} />}</p>
+
+      <div className="flex gap-10 justify-center" >
+      <p>Tries: {tries}</p>
+      <p>Best try:{bestTry}</p>
+        </div>    
+
+      <div className="flex gap-10 justify-center" >
+      <p className="flex gap-2 ">Timer  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds} />}</p>
+      <p className="flex gap-2">Best time {<FormatTime seconds={bestTime}/>}</p>
+      </div> 
+
+      <div className="flex gap-10 justify-center">
           <button
             onClick={() => {
               setShowModal(false) 
               startNewGame()
             }}
-            className="mt-4 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
-          >
+            className="mt-6 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
+            >
             Close
           </button>
+            </div>
         </div>
       </div>
     )}
