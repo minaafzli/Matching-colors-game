@@ -1,6 +1,7 @@
 // App.jsx
 import { useState, useEffect, useRef} from "react";
 import Board from '/components/Board'
+import Timer from '/components/Timer'
 
 const COLORS = [
   "bg-pink-300",
@@ -21,6 +22,9 @@ export default function App() {
   const [showModal , setShowModal] = useState(false)
   const [disabled, setDisabled] = useState(false); //disable clicking while compairing
   const [choiceTwo, setChoiceTwo] = useState(null); 
+  const [isGameOver , setIsGameOver] =useState(false)
+    const [seconds, setSeconds] = useState(0);
+
   const timeoutRef = useRef(null); //timeout for cleaning
 
   
@@ -39,13 +43,18 @@ export default function App() {
     setChoiceOne(null);
     setChoiceTwo(null);
     setDisabled(false);
+    setTries(0)
+    setMatchedCard(0)
+    setIsGameOver(false)
+    setSeconds(0)
+    
+  }
   
-}
-
-
-// start game
-useEffect(() => {
-  startNewGame();
+  
+  // start game
+  useEffect(() => {
+    startNewGame();
+    {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds} />}
   
 }, []);
 
@@ -84,9 +93,13 @@ useEffect(() => {
     }
   }, [choiceTwo]);
 
-useEffect(()=>{
-if(matchedCard===COLORS.length) setShowModal(true)
-},[matchedCard])
+ useEffect(()=>{
+   if(matchedCard===COLORS.length) {
+    setIsGameOver(true)
+    setShowModal(true)
+    }
+ },[matchedCard])
+  
 
   function handleChoice(card) {
     // disable click while compairing
@@ -115,6 +128,7 @@ if(matchedCard===COLORS.length) setShowModal(true)
    
   }
 
+
 return (   
   <div
     className={"min-h-screen flex flex-col items-center justify-start md:justify-center p-6 bg-pink-100 relative "}
@@ -127,7 +141,7 @@ return (
     <div className="flex justify-between gap-10">
       <p>tries: {tries}</p>
       <p>matched: {matchedCard}</p>
-      <p>timer: 0:23</p>
+      <p className="flex gap-1">timer:  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds}  />}</p>
     </div>
     <Board cards={cards} handleChoice={handleChoice} />
     <div className=" flex mt-4 justify-center">
@@ -144,11 +158,14 @@ return (
     {showModal && (
       <div className="fixed inset-0 flex items-center justify-center">
         <div className="bg-black text-gray-200 rounded-lg p-6 w-72 md:w-96 text-center shadow-2xl">
-          <p className="font-bold text-lg pb-5">Game over!</p>
+          <p className="font-bold text-lg pb-5">Game Compeleted!</p>
           <p>tries: {tries}</p>
-          <p>time: 0:23</p>
+      <p className="flex gap-1 justify-center">timer:  {<Timer isGameOver={isGameOver} seconds={seconds} setSeconds={setSeconds} />}</p>
           <button
-            onClick={() => setShowModal(false)}
+            onClick={() => {
+              setShowModal(false) 
+              startNewGame()
+            }}
             className="mt-4 px-4 py-2 bg-pink-600 text-white rounded hover:bg-pink-700"
           >
             Close
